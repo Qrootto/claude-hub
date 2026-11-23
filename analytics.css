@@ -2,7 +2,7 @@
 :root{
   --v0:light-dark(#4A84C8,#5E95D6);--v1:light-dark(#D8804A,#CC7A44);--v2:light-dark(#2E9E7E,#36A88A);--v3:light-dark(#E59A12,#C4840A);
   --v4:light-dark(#C2689E,#C474AE);--v5:light-dark(#5E9A3A,#6AA845);--v6:light-dark(#7C6AD2,#8F80E0);--v7:light-dark(#CF5B5B,#D86A6A);
-  --seq:var(--v0);
+  --seq:var(--accent); /* тепловая карта месяца — оттенки акцента */
 }
 .alink{display:block;margin-top:4px;color:var(--side-ink);text-decoration:none;font-size:var(--fs-body);line-height:var(--lh-body);padding:8px 0}
 .alink::after{content:" →";color:var(--side-muted)}
@@ -58,6 +58,8 @@ a.wk.alink{display:block;margin:0;padding:0;font-size:var(--fs-cap);line-height:
 .hc.b3{background:color-mix(in oklab,var(--seq) 64%,var(--card))}
 .hc.b4{background:color-mix(in oklab,var(--seq) 88%,var(--card))}
 .hc.b3 em,.hc.b4 em{color:var(--ink)}
+/* самая плотная ячейка в тёмной теме: белый на акценте даёт 3,5:1, тёмный текст — 5,4:1 */
+.hc.b4 em,.hc.b4 b{color:light-dark(var(--ink),#0A0A0A)}
 .hc.bf{background:none;box-shadow:inset 0 0 0 1px var(--border)}
 .hc.today{outline:1.5px solid var(--ink);outline-offset:1px}
 .hl{display:flex;align-items:center;gap:4px;font-size:var(--fs-cap);color:var(--muted);margin-top:4px}

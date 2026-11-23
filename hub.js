@@ -147,11 +147,18 @@ function row(t,ctx){
     if(ctx==='plan'&&d&&d<TODAY())st+=`<em class="st">с ${fmtDay(d)}</em>`;
   }else if(t.canceled)st=`<em class="st">отменена</em>`;
   const mark=ctx==='proj'&&plan&&!t.done?`<span class="mark"><svg viewBox="0 0 12 12"><path d="M2.5 6.25l2.25 2.25 4.75-5"/></svg>в плане</span>`:'';
-  const pbtn=t.done?'':plan
-    ?`<button class="ib${ctx==='proj'?' inplan':''}" data-a="unplan" aria-label="Убрать из плана" title="Убрать из плана">${I.rm}</button>`
+  /* в списках проектов главное действие — «в план», поэтому слева кнопка плана, а не чекбокс (Q23, 23.11).
+     Закрыть из бэклога — через «ещё» или карточку; закрытая показана галочкой без действия */
+  const proj=ctx==='proj';
+  const left=!proj?cbHTML(t):t.done
+    ?`<span class="cb" aria-hidden="true"><i><svg viewBox="0 0 12 12"><path pathLength="1" d="M2.5 6.25l2.25 2.25 4.75-5"/></svg></i></span>`
+    :plan?`<button class="pl on" type="button" data-a="unplan" aria-label="Убрать из плана: ${esc(t.title)}" title="Убрать из плана">${I.rm}</button>`
+    :`<button class="pl" type="button" data-a="plan" aria-label="В план на сегодня: ${esc(t.title)}" title="В план на сегодня">${I.add}</button>`;
+  const pbtn=t.done||proj?'':plan
+    ?`<button class="ib" data-a="unplan" aria-label="Убрать из плана" title="Убрать из плана">${I.rm}</button>`
     :`<button class="ib" data-a="plan" aria-label="В план на сегодня" title="В план на сегодня">${I.add}</button>`;
   return `<div class="task ctx-${ctx}${ctx==='proj'&&plan&&!t.done?' inplan':''}${t.done?' done':''}${t.canceled?' canceled':''}${ctx==='plan'&&!t.done?' sortable':''}" data-id="${esc(t.id)}">
-    ${cbHTML(t)}
+    ${left}
     <div class="t"><button class="tt" type="button" data-a="card">${esc(t.title)}</button>${st}${mark}</div>
     <div class="meta">${ctx==='plan'?`<span class="pj">${esc(p.name)}</span>`:''}<span class="hrs num">${hrs(t.hours)}</span></div>
     <div class="ra">${pbtn}<button class="ib" data-a="menu" aria-label="Ещё" aria-haspopup="menu" title="Ещё">${I.more}</button></div></div>`;
@@ -345,7 +352,9 @@ async function updP(p,data){
 const A={
   plan:t=>{const mx=Math.max(-1,...planOpen().map(x=>+x.todayOrder||0));upd(t,{today:TODAY(),todayOrder:mx+1});toast('В плане на сегодня',()=>upd(t,{today:false}))},
   unplan:t=>{const was=t.today;upd(t,{today:false});toast('Убрано из плана',()=>upd(t,{today:was}))},
-  done:t=>upd(t,t.done?{done:false,doneAt:null}:{done:true,doneAt:stamp(),doing:false}),
+  done:t=>{if(t.done){upd(t,{done:false,doneAt:null});return}
+    const was={doing:t.doing};upd(t,{done:true,doneAt:stamp(),doing:false});
+    toast('Задача закрыта',()=>upd(t,{done:false,doneAt:null,doing:was.doing}))},
   doing:t=>upd(t,t.doing?{doing:false}:{doing:true,waiting:''}),
   hours:(t,h)=>upd(t,{hours:h}),
   waiting:(t,v)=>upd(t,v?{waiting:v,doing:false}:{waiting:''}),
@@ -358,6 +367,7 @@ const menu=$('#menu');let menuFor=null,menuBtn=null;
 function openMenu(btn,t){
   closeMenu(true);menuFor=t.id;menuBtn=btn;btn.classList.add('on');
   menu.innerHTML=`<div class="mlist" role="menu">
+    ${t.canceled?'':`<button role="menuitem" data-m="done" type="button"><span>${t.done?'Открыть снова':'Закрыть'}</span></button>`}
     <button role="menuitemcheckbox" aria-checked="${!!t.doing}" data-m="doing" type="button"><span>В работе</span>${t.doing?I.check:''}</button>
     <button role="menuitem" data-m="wait" type="button"><span>${t.waiting?'Ждём: изменить':'Ждём…'}</span></button>
     <button role="menuitem" data-m="card" type="button"><span>Открыть карточку</span></button></div>
@@ -378,7 +388,7 @@ function closeMenu(instant){if(menu.hidden)return;menuBtn&&menuBtn.classList.rem
   if(instant){menu.hidden=true;return}setTimeout(()=>{if(!menu.classList.contains('open'))menu.hidden=true},140)}
 menu.addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;const t=tById(menuFor);if(!t)return;const m=b.dataset.m;
   const back=menuBtn;closeMenu();
-  if(m==='doing')A.doing(t);if(m==='h')A.hours(t,+b.dataset.v);if(m==='cancel')A.cancel(t);
+  if(m==='done')A.done(t);if(m==='doing')A.doing(t);if(m==='h')A.hours(t,+b.dataset.v);if(m==='cancel')A.cancel(t);
   if(m==='card')openCard(t.id,null,e.detail===0);if(m==='wait')openCard(t.id,'wait',e.detail===0);
   if(m!=='card'&&m!=='wait')back&&back.focus({preventScroll:true});});
 menu.addEventListener('keydown',e=>{const bs=$$('button',menu),i=bs.indexOf(document.activeElement);
@@ -521,7 +531,10 @@ async function copyConn(b){
   try{await navigator.clipboard.writeText(txt);ok=true}catch(e){
     const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();
     try{ok=document.execCommand('copy')}catch(_){}ta.remove()}
-  toast(ok?(u?'Блок скопирован':'Скопировано. Впиши адрес хаба вместо <адрес хаба>'):'Не получилось скопировать. Выдели текст вручную');
+  if(!ok){/* браузер не дал доступ к буферу: выделяем блок, чтобы скопировать ⌘C */
+    const pre=(b.closest('.onb-conn,#pConn')||document).querySelector('.code pre');
+    if(pre){const r=document.createRange();r.selectNodeContents(pre);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);pre.scrollIntoView({block:'nearest'})}}
+  toast(ok?(u?'Блок скопирован':'Скопировано. Впиши адрес хаба вместо <адрес хаба>'):'Браузер не дал скопировать. Блок выделен — нажми ⌘C');
   if(ok){const sp=$('span',b);sp.textContent='Скопировано';clearTimeout(b._t);b._t=setTimeout(()=>sp.textContent='Скопировать блок',2000)}
   if(urlDraft&&db&&canWrite&&!(S.meta.find(d=>d.id==='hub')||{}).url)db.doc('meta/hub').set({url:urlDraft,updatedAt:stamp()}).catch(()=>{})}
 document.addEventListener('input',e=>{const f=e.target.closest&&e.target.closest('[data-url]');if(!f)return;
@@ -571,10 +584,11 @@ document.addEventListener('click',e=>{
   if(f){const k=f.dataset.f;
     if(k==='size')F.size=+f.dataset.v;else if(k==='tag'){const v=f.dataset.v;F.tags=F.tags.includes(v)?F.tags.filter(x=>x!==v):[...F.tags,v]}else F[k]=!F[k];
     saveF();renderFilters();renderProjects();return}
+  /* «Скопировать блок» живёт и на экране первого запуска, и в диалоге «Новый проект» — проверяем до выхода по диалогам */
+  if(e.target.closest('[data-a=copyconn]')){copyConn(e.target.closest('[data-a=copyconn]'));return}
   if(e.target.closest('#drawer,#menu,#addDlg,#projDlg'))return;
   if(e.target.closest('[data-a=newproj]')){openProj('here');return}
-  if(e.target.closest('[data-a=copyconn]')){copyConn(e.target.closest('[data-a=copyconn]'));return}
-  const cb=e.target.closest('.cb');
+  const cb=e.target.closest('button.cb');
   if(cb&&!cb.disabled){const t=tById(cb.closest('.task').dataset.id);t&&A.done(t);return}
   const a=e.target.closest('[data-a]');if(!a)return;
   const act=a.dataset.a,blk=a.closest('.blk');

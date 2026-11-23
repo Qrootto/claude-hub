@@ -379,3 +379,17 @@ body.dragging,body.dragging *{user-select:none;-webkit-user-select:none;cursor:g
 @media (max-width:900px){.onb-conn{grid-template-columns:minmax(0,1fr);gap:16px}.onb-conn .code{max-height:148px;grid-row:2}}
 @media (max-width:720px){.onb-h h1{font-size:24px;line-height:30px}.onb-c{padding:16px}.onb-here{flex-direction:column;align-items:flex-start}}
 .hseg[hidden]{display:none}
+
+/* v21: в списках проектов слева кнопка «в план» вместо чекбокса */
+.pl{position:relative;width:20px;height:20px;display:grid;place-items:center;color:var(--muted);transition:color var(--fast) ease}
+/* зона нажатия 36×36 — больше самой кнопки; вправо поменьше, чтобы не наезжать на название */
+.pl::before{content:"";position:absolute;inset:-8px -6px -8px -10px}
+/* при наведении линии вытягиваются, толщина та же: масштаб без масштабирования обводки */
+.pl svg{width:16px;height:16px;overflow:visible;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;transition:transform var(--mod) var(--ease-crit)}
+.pl svg path{vector-effect:non-scaling-stroke}
+@media (hover:hover){.task.is-active .pl{color:var(--ink)}.task .pl:hover{color:var(--accent)}.task .pl:hover svg{transform:scale(1.35)}}
+.pl:active svg{transform:scale(1.2);transition-duration:var(--fast)}
+.pl.on{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.pl svg{transition:none}}
+span.cb{pointer-events:none}
+@media (max-width:720px){.task .pl{margin-top:0}}
