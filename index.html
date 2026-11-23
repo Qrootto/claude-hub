@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Хаб</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&display=swap">
+<link rel="stylesheet" href="hub.css">
+<link rel="stylesheet" href="analytics.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="day">
+      <span class="date" id="date"></span>
+      <span class="sum num" id="daySum">Загружаю…</span>
+      <span class="sub num" id="daySub"></span>
+      <div class="meter" aria-hidden="true"><i id="dayMeter"></i></div>
+    </div>
+    <div class="pwrap"><nav class="pnav" id="pnav" aria-label="Проекты"></nav>
+    <button class="pnew" id="pnew" type="button" data-a="newproj" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9"/></svg>Новый проект</button></div>
+    <div class="pselect"><select id="psel" aria-label="Перейти к проекту"></select><a class="wk num alink" id="wkMini" href="#analytics"></a></div>
+    <div class="stats">
+      <div class="stat"><b class="num" id="wk"></b><span class="l">Сделано за неделю</span></div>
+      <div class="stat"><b class="num" id="bl"></b><span class="l">Открыто в бэклоге</span></div>
+      <a class="alink" href="#analytics">Вся аналитика</a>
+    </div>
+  </aside>
+
+  <main>
+    <div class="wrap" id="mainView">
+      <section class="onb" id="onb" hidden aria-label="Первый запуск"></section>
+      <section class="blk" id="plan" data-key="plan"></section>
+      <div>
+        <div class="filters" id="filters"></div>
+      </div>
+      <div class="wrap" id="projects" style="gap:24px"></div>
+    </div>
+    <section class="wrap an" id="analytics" hidden aria-label="Аналитика"></section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="menu" id="menu" hidden></div>
+<div class="dlg-wrap" id="addDlg" hidden>
+  <form class="dlg" role="dialog" aria-modal="true" aria-labelledby="addT" novalidate>
+    <h3 id="addT">Новая задача</h3>
+    <label class="fld"><span class="l">Название</span><input id="aTitle" type="text" autocomplete="off" placeholder="Что сделать, на 30 минут – 3 часа"><span class="err" id="aErr" hidden>Напиши, что сделать</span></label>
+    <div class="row2">
+      <label class="fld"><span class="l">Проект</span><select id="aProj"></select></label>
+      <label class="fld"><span class="l">Раздел</span><select id="aSec"></select></label>
+    </div>
+    <div class="fld"><span class="l">Часы</span><div class="hseg" id="aHours"></div></div>
+    <button class="chk" id="aToday" type="button" role="checkbox" aria-checked="false"><span class="cb" aria-hidden="true"><i><svg viewBox="0 0 12 12"><path pathLength="1" d="M2.5 6.25l2.25 2.25 4.75-5"/></svg></i></span>Сразу в план на сегодня</button>
+    <div class="acts"><button class="btn ghost" type="button" data-x="cancel">Отмена</button><button class="btn primary" type="submit">Добавить</button></div>
+  </form>
+</div>
+<div class="dlg-wrap" id="projDlg" hidden>
+  <form class="dlg" role="dialog" aria-modal="true" aria-labelledby="pT" novalidate>
+    <h3 id="pT">Новый проект</h3>
+    <div class="hseg tabs" role="group" aria-label="Как завести"><button type="button" data-tab="here">Создать здесь</button><button type="button" data-tab="conn">Подключить проект Claude</button></div>
+    <div class="pbody" id="pHere">
+      <label class="fld"><span class="l">Название</span><input id="pName" type="text" autocomplete="off" placeholder="Например, Ремонт кухни"><span class="err" id="pErr" hidden>Напиши название</span></label>
+      <div class="fld"><span class="l">Тип</span><div class="hseg" id="pKind"></div></div>
+      <label class="fld"><span class="l">Разделы — через запятую, можно пусто</span><input id="pSecs" type="text" autocomplete="off" placeholder="Замеры, Закупки, Работы"></label>
+    </div>
+    <div class="pbody" id="pConn" hidden></div>
+    <div class="acts"><button class="btn ghost" type="button" data-x="cancel" id="pCancel">Отмена</button><button class="btn primary" type="submit" id="pSubmit">Создать</button></div>
+  </form>
+</div>
+<div class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="dTitle"><div class="dpanel" tabindex="-1"></div></div>
+
+<script src="hub.js"></script>
+<script src="analytics.js"></script>
+</body>
+</html>
