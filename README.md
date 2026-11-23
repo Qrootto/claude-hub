@@ -15,7 +15,7 @@
 
 ## Как поставить
 
-Нужен тариф claude.ai, на котором Claude публикует артефакты с базой. Если не выходит — напиши в [Issues](https://github.com/Qrootto/claude-hub/issues).
+Нужен тариф claude.ai, на котором Claude публикует артефакты с базой. Если не выходит — напиши в комментариях [телеграм-канала](https://t.me/village_modnique).
 
 1. Открой новый чат в [claude.ai](https://claude.ai) и отправь этот промт:
 
